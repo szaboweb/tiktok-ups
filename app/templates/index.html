@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIKTOK-UPS // DISTRIBUTION ORCHESTRATOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="orchestrator-layout">
+        <!-- Top Bar Header -->
+        <header class="system-header">
+            <div class="brand-section">
+                <div class="brand-badge">SYSTEM</div>
+                <div class="brand-title">
+                    <h1>TIKTOK-UPS</h1>
+                    <span class="version-tag">ORCHESTRATOR v1.0.0</span>
+                </div>
+            </div>
+
+            <div class="system-telemetry">
+                <div class="telemetry-node">
+                    <span class="node-label">SERVER</span>
+                    <span class="node-val status-online">PORT 8080</span>
+                </div>
+                <div class="telemetry-node">
+                    <span class="node-label">DIRECTORY WATCHER</span>
+                    <span class="node-val status-active">./Queue [ACTIVE]</span>
+                </div>
+                <div class="telemetry-node">
+                    <span class="node-label">STREAM LOGS</span>
+                    <span class="node-val status-live" id="streamIndicator">LIVE (SSE)</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Controls & Content Grid -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: Orchestration Controls -->
+            <section class="panel controls-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="panel-accent"></span>
+                        <h2>DISTRIBUTION CONFIGURATION</h2>
+                    </div>
+                </div>
+
+                <!-- Integration Toggles -->
+                <div class="control-block">
+                    <div class="block-title">TARGET PLATFORMS</div>
+                    
+                    <div class="toggle-card" id="tiktokCard">
+                        <div class="toggle-meta">
+                            <span class="platform-name">TIKTOK</span>
+                            <span class="engine-desc">tiktok-uploader // Playwright Browser Headless</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="tiktokToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-card" id="instagramCard">
+                        <div class="toggle-meta">
+                            <span class="platform-name">INSTAGRAM</span>
+                            <span class="engine-desc">instagrapi // Reels & Video API Engine</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="instagramToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Scheduling Block -->
+                <div class="control-block">
+                    <div class="block-title">CONTENT SCHEDULER</div>
+                    <p class="field-hint">Specify target execution timestamp. Leave empty for manual trigger mode.</p>
+                    
+                    <div class="scheduler-field-group">
+                        <label for="scheduleDatetime" class="input-label">EXECUTION TIMESTAMP</label>
+                        <input type="datetime-local" id="scheduleDatetime" class="dark-datetime-input">
+                    </div>
+
+                    <div class="action-btn-row">
+                        <button type="button" id="saveScheduleBtn" class="btn btn-primary">
+                            SAVE SCHEDULE
+                        </button>
+                        <button type="button" id="clearScheduleBtn" class="btn btn-secondary">
+                            CLEAR SCHEDULE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Trigger & Actions -->
+                <div class="control-block">
+                    <div class="block-title">MANUAL DISPATCH</div>
+                    <div class="action-btn-col">
+                        <button type="button" id="dispatchAllBtn" class="btn btn-accent">
+                            DISPATCH ALL PENDING NOW
+                        </button>
+                        <button type="button" id="clearQueueBtn" class="btn btn-ghost">
+                            PURGE COMPLETED QUEUE ITEMS
+                        </button>
+                    </div>
+                </div>
+
+                <!-- System Stats Metrics -->
+                <div class="stats-matrix">
+                    <div class="stat-cell">
+                        <div class="stat-number" id="statQueueCount">0</div>
+                        <div class="stat-name">QUEUE ASSETS</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-number" id="statPendingCount">0</div>
+                        <div class="stat-name">PENDING</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-number" id="statProcessedCount">0</div>
+                        <div class="stat-name">PROCESSED</div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="stat-number" id="statFailedCount">0</div>
+                        <div class="stat-name">FAILED</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Queue State & Gemini Metadata -->
+            <section class="panel queue-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="panel-accent"></span>
+                        <h2>INGESTION & GEMINI METADATA PIPELINE</h2>
+                    </div>
+                    <button type="button" id="refreshQueueBtn" class="btn-micro">REFRESH</button>
+                </div>
+
+                <div class="queue-instruction">
+                    Drop `.mp4` video files into <code>./Queue</code>. The local watcher will detect them and trigger Gemini AI copy and hashtag generation.
+                </div>
+
+                <div class="queue-container" id="queueContainer">
+                    <div class="empty-state" id="queueEmptyState">
+                        <div class="empty-box-indicator">[ NO ASSETS IN QUEUE ]</div>
+                        <p>Place .mp4 files into the local Queue directory to initiate processing.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Full-Width Terminal Log Section -->
+        <section class="terminal-panel">
+            <div class="terminal-header">
+                <div class="terminal-title">
+                    <span class="terminal-indicator"></span>
+                    <span>SYSTEM TERMINAL TELEMETRY // STDOUT & ENGINE STREAM</span>
+                </div>
+                <div class="terminal-controls">
+                    <button type="button" id="toggleAutoScrollBtn" class="term-ctrl-btn active">AUTO-SCROLL [ON]</button>
+                    <button type="button" id="pauseStreamBtn" class="term-ctrl-btn">PAUSE STREAM</button>
+                    <button type="button" id="clearLogsBtn" class="term-ctrl-btn">CLEAR TERMINAL</button>
+                </div>
+            </div>
+            <div class="terminal-screen" id="terminalScreen">
+                <!-- Log output lines inserted dynamically -->
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

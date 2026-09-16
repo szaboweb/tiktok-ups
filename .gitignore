@@ -1,0 +1,25 @@
+# Python & Environments
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Sensitive environment variables & API keys
+.env
+.env.local
+
+# Sensitive authentication cookies and sessions
+auth/*
+!auth/*.example
+
+# Local media directories
+Queue/*.mp4
+Processed/*.mp4
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
